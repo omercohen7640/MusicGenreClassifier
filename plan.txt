@@ -1,0 +1,13 @@
+project plan:
+1. build 1D conv-net. input: 30-second waveform and classify the genre.
+
+
+
+feature list for improvement (1d convnet):
+1. cut the songs to k-seconds part and enlagre the trainig set. need to decide the size of k.
+2. cut the songs in multiple spots in the song.
+3. need to do some research about audio data augmentation.
+
+
+feature list for 2d convnet:
+1. add 2d convnet and concat the feature to one big feature vector with the 1d convnet
