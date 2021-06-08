@@ -7,6 +7,11 @@ feature list for improvement (1d convnet):
 1. cut the songs to k-seconds part and enlagre the trainig set. need to decide the size of k.
 2. cut the songs in multiple spots in the song.
 3. need to do some research about audio data augmentation.
+4. add dropout to network
+5. check for an easy way to pad the tracks with zeros
+6. build warmup section
+7. try to nomralize feature-wize
+8. discuss batchnorm because batch size is small
 
 
 feature list for 2d convnet:
