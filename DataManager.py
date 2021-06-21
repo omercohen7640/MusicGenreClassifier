@@ -23,20 +23,21 @@ class GTZANDataset(Dataset):
             elif vector_equlizer == 'cut min':
                 x.append(waveform[:,:output_length])
                 y.append(labels_list.index(label))
-            elif vector_equlizer == '10 sec':
-                sec_10 = sr * 10
-                r_list = createRandomSortedList(10, (-2 * sr), (22 * sr))
+            elif vector_equlizer == 'k sec':
+                k = 1
+                sec_k = sr * k
+                resize_data_factor = 1
+                r_list = createRandomSortedList(resize_data_factor, (0 * sr), (26 * sr))
                 for i in r_list:
                     y.append(labels_list.index(label))
                     if i < 0:
                         pad = i * (-1)
-                        x.append(
-                            F.pad(input=waveform[:, :i + sec_10], pad=(pad, 0, 0, 0), mode='constant', value=0))
-                    elif i > sr * 20:
-                        pad = i + sec_10 - waveform.size(1)
+                        x.append(F.pad(input=waveform[:, :i + sec_k], pad=(pad, 0, 0, 0), mode='constant', value=0))
+                    elif i > sr * 25:
+                        pad = i + sec_k - waveform.size(1)
                         x.append(F.pad(input=waveform[:, i:], pad=(0, pad, 0, 0), mode='constant', value=0))
                     else:
-                        x.append(waveform[:, i:i + sec_10])
+                        x.append(waveform[:, i:i + sec_k])
         self.x = torch.stack(x)
         self.y = torch.tensor(y)
 
@@ -67,9 +68,9 @@ def createRandomSortedList(num, start=1, end=100):
 def get_dataloader(hparams):
     trainset,validset,testset = load_gtza_from_torch()
 
-    trainset = GTZANDataset(torch_dataset=trainset, labels_list=hparams.genres)
-    validset = GTZANDataset(torch_dataset=validset, labels_list=hparams.genres)
-    testset = GTZANDataset(torch_dataset=testset, labels_list=hparams.genres)
+    trainset = GTZANDataset(torch_dataset=trainset, labels_list=hparams.genres,vector_equlizer='k sec')
+    validset = GTZANDataset(torch_dataset=validset, labels_list=hparams.genres,vector_equlizer='k sec')
+    testset = GTZANDataset(torch_dataset=testset, labels_list=hparams.genres,vector_equlizer='k sec')
 
     train_loader = DataLoader(trainset, batch_size=hparams.batch_size, shuffle=True, drop_last=False)
     valid_loader = DataLoader(validset, batch_size=hparams.batch_size, shuffle=True, drop_last=False)
