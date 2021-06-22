@@ -1,11 +1,4 @@
 # MusicGenreClassifier
-
-
-
-here we write what the hell we did <3
-
-
-
 <h1 align="center">
   <br>
 Technion EE 046211 - Deep Learning
@@ -14,10 +7,10 @@ Technion EE 046211 - Deep Learning
 </h1>
   <p align="center">
     <a href="https://taldatech.github.io">Omer Cohen</a> •
-    <a href="https://github.com/royg27">Jonathan Nir Shalit</a> •
+    <a href="https://github.com/royg27">Jonathan Nir Shalit</a>
   </p>
 
-Jupyter Notebook tutorials for the Technion's EE 046211 course "Deep Learning"
+Our Project for the Technion's EE 046211 course "Deep Learning"
 * Animation by <a href="https://medium.com/@gumgumadvertisingblog">GumGum</a>.
 
 <h4 align="center">
@@ -28,10 +21,61 @@ Jupyter Notebook tutorials for the Technion's EE 046211 course "Deep Learning"
 </h4>
 
 
-- [ee046211-deep-learning](#ee046211-deep-learning)
+- [OurProject](#OurProject)
   * [Agenda](#agenda)
-  * [Running The Notebooks](#running-the-notebooks)
-    + [Running Online](#running-online)
-    + [Running Locally](#running-locally)
-  * [Installation Instructions](#installation-instructions)
-    + [Libraries to Install](#libraries-to-install)
+  * [MusicGenreClassifier](#MusicGenreClassifier)
+  * [Dataset](#Dataset)
+    + [-----](#-----)
+  * [Data augmentation](#installation-instructions)
+    + [-----](#-----)
+  * [1D-Classifier](#installation-instructions)
+    + [Failer](#Failer)
+  * [2D-Classifier](#installation-instructions)
+    + [Transformtion](#Transformtion)
+    + [Sheduler&WarmUp](#Sheduler&WarmUp)
+    + [Tuner](#Tuner)
+  * [Results](#Results)
+
+
+
+
+
+
+## Agenda
+here we right things about the goal of the project
+
+## MusicGenreClassifier
+here we right things about what we are trying to solve and the benefits - classefy user music intres and recommend new music ect.
+
+## Dataset
+here we right things about the [GTZAN](http://marsyas.info/downloads/datasets.html) dataset
+
+### -----
+
+## Data augmentation
+here we right things about the diffrent Data augmentation we are using on the Data we have and when are we applying them.
+
+### -----
+
+## 1D-Classifier
+here we right things about 
+
+### Failer!
+this was a Failer and the net just played the guessing game XD
+
+## 2D-Classifier
+here we right things about 
+
+### Transformtion
+someting....
+
+### Sheduler&WarmUp
+someting....
+
+### Tuner
+someting....
+
+
+## Result
+here we right things about 
+
