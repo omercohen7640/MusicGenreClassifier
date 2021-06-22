@@ -21,11 +21,12 @@ from hparams import hparams
 import torch.nn as nn
 import time
 import torch.optim.lr_scheduler as lr_scheduler
-import pytorch_warmup as warmup
+#import pytorch_warmup as warmup
 import datamanager_ver2
 import model_cnn2d
 import optuna
 import warmup as my_warmup
+
 
 
 def get_lr(optimizer):
@@ -156,12 +157,15 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     criterion = nn.CrossEntropyLoss()
     lr = hparams.learning_rate
-    optimizer = torch.optim.Adam(music_classify.parameters(), lr=lr)
+    warmup_factor = hparams.warmup_factor
+    init_lr = lr / warmup_factor
+
+    optimizer = torch.optim.Adam(music_classify.parameters(), lr=init_lr)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=hparams.factor, patience=hparams.patience, verbose=True)
     #warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
     print("begin warmup loop...")
     warmup_epochs = hparams.warmup_epochs
-    num_steps = warmup_epochs * (len(train_loader) * hparams.batch_size)
+    num_steps = warmup_epochs * len(train_loader)
     warmuper = my_warmup.LinearWarmuper(optimizer=optimizer, steps=num_steps, factor=1e2)
     for w_epoch in range(warmup_epochs + 1):
         print("info: lr={}".format(get_lr(optimizer)))
@@ -267,19 +271,25 @@ def objective(trial):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     criterion = nn.CrossEntropyLoss()
     lr = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
+    warmup_factor = trial.suggest_float("warmup_factor", 1e1, 1e3, log=True)
+    init_lr = lr/warmup_factor
     optimizer_name = trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"])
-    optimizer = getattr(torch.optim, optimizer_name)(music_classify.parameters(), lr=lr)
+    optimizer = getattr(torch.optim, optimizer_name)(music_classify.parameters(), lr=init_lr)
     sched_factor = trial.suggest_float("sched_factor",0,1)
     patience = trial.suggest_int("patience",3,9)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=sched_factor, patience=patience,
                                                verbose=True)
     #warmup section:
     warmup_epochs = trial.suggest_int("warmup_ephocs",2,5)
-    num_steps = warmup_epochs*(len(train_loader)*hparams.batch_size)
-    warmup_factor = trial.suggest_float("warmup_factor", 1e1, 1e3, log=True)
+    num_steps = warmup_epochs*len(train_loader)
+
     warmuper = my_warmup.LinearWarmuper(optimizer=optimizer,steps=num_steps, factor = warmup_factor)
     for w_epoch in range(warmup_epochs+1):
+        total_tracks = 0
+        total_correct = 0
+        epoch_time = time.time()
         for i, data in enumerate(train_loader):
+            running_loss = 0.0
             waveform, label = data
             waveform.to(device)
             label.to(device)
@@ -292,11 +302,21 @@ def objective(trial):
             outputs = music_classify(inputs)
             outputs = music_classify(inputs)
             loss = criterion(outputs, label)
+            running_loss += loss.data.item()
+            _, predicted = torch.max(outputs.data, 1)
+            total_tracks += label.size(0)
+            total_correct += (predicted == label).sum().item()
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             warmuper.step()
+        running_loss /= len(train_loader)
+        model_accuracy = total_correct / total_tracks * 100
+        epoch_time = time.time() - epoch_time
+        log = "Epoch: {}  training loss: {:.3f} | train acc: {}| time: {}".format(w_epoch, running_loss,
+                                                                                                  model_accuracy,
+                                                                                                  epoch_time)
 
     # warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
     ephocs = trial.suggest_int("ephocs",20,45)
@@ -358,4 +378,9 @@ def run_parameter_tuning():
 
 
 if __name__ == '__main__':
-    model_cnn2d.initialize_model(model_name='resnet',num_classes=10,feature_extract=False,use_pretrained=False)
+    tarin_loader, valid_loader, test_loader = load_data()
+    feature_extract = False
+    model, inpuut_size = model_cnn2d.initialize_model(model_name='resnet', num_classes=10,
+                                                      feature_extract=feature_extract, use_pretrained=False)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    train_cnn_2d_pre_net(tarin_loader, valid_loader, test_loader, music_classify=model)

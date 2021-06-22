@@ -37,7 +37,7 @@ def load_dataset(set_name, hparams):
     return x,y
 
 def get_dataloader(hparams):
-    x_train, y_train = load_dataset('train', hparams)
+    x_train, y_train = load_dataset('train_aug', hparams)
     x_valid, y_valid = load_dataset('valid', hparams)
     x_test, y_test = load_dataset('test', hparams)
 
