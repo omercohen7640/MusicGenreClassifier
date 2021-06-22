@@ -17,3 +17,6 @@ feature list for improvement (1d convnet):
 feature list for 2d convnet:
 1. add 2d convnet and concat the feature to one big feature vector with the 1d convnet
 2. read hyper-parameters from config file
+
+presentation and git tasks:
+1. train all models and present the results

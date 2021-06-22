@@ -16,6 +16,9 @@ class HParams(object):
         self.feature_length = 1024
         self.maximum_length = 675_808
         self.minimum_legnth = 660_000
+        self.number_of_trials = 20
+        self.warmup_epochs = 3
+
 
         # Training Parameters
         self.device = 1  # 0: CPU, 1: GPU0, 2: GPU1, ...
