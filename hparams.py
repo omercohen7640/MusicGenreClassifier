@@ -16,11 +16,11 @@ class HParams(object):
         self.feature_length = 1024
         self.maximum_length = 675_808
         self.minimum_legnth = 660_000
-        self.number_of_trials = 20
+        self.number_of_trials = 7
         self.warmup_epochs = 3
         self.warmup_factor = 1e2
         self.aug_number = 5
-
+        self.dropout = 0.2
 
         # Training Parameters
         self.device = 1  # 0: CPU, 1: GPU0, 2: GPU1, ...
@@ -28,9 +28,9 @@ class HParams(object):
         self.num_epochs = 20
         self.learning_rate = 1e-2
         self.stopping_rate = 1e-5
-        self.weight_decay = 1e-6
+        self.weight_decay = 1e-5
         self.momentum = 0.9
         self.factor = 0.2
-        self.patience = 5
+        self.patience = 3
 
 hparams = HParams()
