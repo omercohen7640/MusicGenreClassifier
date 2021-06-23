@@ -21,11 +21,14 @@ from hparams import hparams
 import torch.nn as nn
 import time
 import torch.optim.lr_scheduler as lr_scheduler
+import logging
 #import pytorch_warmup as warmup
 import datamanager_ver2
 import model_cnn2d
 import optuna
 import warmup as my_warmup
+import resnet_dropout
+from datetime import datetime as dt
 
 
 
@@ -160,7 +163,7 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
     warmup_factor = hparams.warmup_factor
     init_lr = lr / warmup_factor
 
-    optimizer = torch.optim.Adam(music_classify.parameters(), lr=init_lr)
+    optimizer = torch.optim.Adam(music_classify.parameters(), lr=init_lr, weight_decay=hparams.weight_decay)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=hparams.factor, patience=hparams.patience, verbose=True)
     #warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
     print("begin warmup loop...")
@@ -168,8 +171,12 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
     num_steps = warmup_epochs * len(train_loader)
     warmuper = my_warmup.LinearWarmuper(optimizer=optimizer, steps=num_steps, factor=1e2)
     for w_epoch in range(warmup_epochs + 1):
+        total_tracks = 0
+        total_correct = 0
+        epoch_time = time.time()
         print("info: lr={}".format(get_lr(optimizer)))
         for i, data in enumerate(train_loader):
+            running_loss = 0.0
             waveform, label = data
             waveform.to(device)
             label.to(device)
@@ -182,13 +189,20 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
             outputs = music_classify(inputs)
             outputs = music_classify(inputs)
             loss = criterion(outputs, label)
+            running_loss += loss.data.item()
+            _, predicted = torch.max(outputs.data, 1)
+            total_tracks += label.size(0)
+            total_correct += (predicted == label).sum().item()
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             warmuper.step()
-
-
+        running_loss /= len(train_loader)
+        model_accuracy = total_correct / total_tracks * 100
+        epoch_time = time.time() - epoch_time
+        log = "Epoch: {}  training loss: {:.3f} | train acc: {}| time: {}".format(w_epoch, running_loss,model_accuracy,epoch_time)
+        print(log)
 
     number_of_ephocs = hparams.num_epochs
     print("starting train loop...")
@@ -263,8 +277,19 @@ def calculate_accuracy(model, dataloader, device , criterion):
     model_accuracy = total_correct / total_images * 100
     return model_accuracy, confusion_matrix, runningn_loss
 
+
 def objective(trial):
-    music_classify, _ = model_cnn2d.initialize_model(model_name = 'resnet',num_classes=10,feature_extract=False,use_pretrained=False)
+
+    test_acc = train_for_optuna(trial=trial)
+    return test_acc
+
+
+def train_for_optuna(trial):
+    now = dt.now()
+    dt_string = now.strftime("%d%m%Y%H%M")
+    path = os.path.join(os.getcwd(),"trial_"+dt_string)
+    os.mkdir(path)
+    music_classify=resnet_dropout.resnet18()
     print("loading data...")
     train_loader, valid_loader, test_loader = load_data()
     print("starting training...")
@@ -274,7 +299,7 @@ def objective(trial):
     warmup_factor = trial.suggest_float("warmup_factor", 1e1, 1e3, log=True)
     init_lr = lr/warmup_factor
     optimizer_name = trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"])
-    optimizer = getattr(torch.optim, optimizer_name)(music_classify.parameters(), lr=init_lr)
+    optimizer = getattr(torch.optim, optimizer_name)(music_classify.parameters(), lr=init_lr, weight_decay=hparams.weight_decay)
     sched_factor = trial.suggest_float("sched_factor",0,1)
     patience = trial.suggest_int("patience",3,9)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=sched_factor, patience=patience,
@@ -284,7 +309,9 @@ def objective(trial):
     num_steps = warmup_epochs*len(train_loader)
 
     warmuper = my_warmup.LinearWarmuper(optimizer=optimizer,steps=num_steps, factor = warmup_factor)
+    print("warmup section...")
     for w_epoch in range(warmup_epochs+1):
+        print("info: lr={}".format(get_lr(optimizer)))
         total_tracks = 0
         total_correct = 0
         epoch_time = time.time()
@@ -300,7 +327,6 @@ def objective(trial):
             inputs[:, 2, :, :] = waveform
             inputs = inputs.to(device)
             outputs = music_classify(inputs)
-            outputs = music_classify(inputs)
             loss = criterion(outputs, label)
             running_loss += loss.data.item()
             _, predicted = torch.max(outputs.data, 1)
@@ -315,19 +341,19 @@ def objective(trial):
         model_accuracy = total_correct / total_tracks * 100
         epoch_time = time.time() - epoch_time
         log = "Epoch: {}  training loss: {:.3f} | train acc: {}| time: {}".format(w_epoch, running_loss,
-                                                                                                  model_accuracy,
-                                                                                                  epoch_time)
-
+                                                                          model_accuracy,epoch_time)
+        print(log)
+    best_valid_acc = 0
     # warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
     ephocs = trial.suggest_int("ephocs",20,45)
     print("starting train loop...")
     for epoch in range(1, ephocs + 1):
+        print("info: lr={}".format(get_lr(optimizer)))
         music_classify.train()
         running_loss = 0.0
         epoch_time = time.time()
         total_tracks = 0
         total_correct = 0
-        print("info: lr={}".format(get_lr(optimizer)))
 
         for i, data in enumerate(train_loader):
             waveform, label = data
@@ -358,14 +384,28 @@ def objective(trial):
                                                                                                   model_accuracy,
                                                                                                   valid_accuracy,
                                                                                                   epoch_time)
+        if valid_accuracy > best_valid_acc:
+            best_valid_acc = valid_accuracy
+            path_save = os.path.join(path,"best_model")
+            torch.save(music_classify.state_dict(),path_save)
+
         print(log)
         scheduler.step(metrics=valid_accuracy)
         # warmup_scheduler.dampen()
     test_accuracy, _, _ = calculate_accuracy(music_classify, test_loader, device, criterion=criterion)
+    path_save = os.path.join(path, "last_model")
+    torch.save(music_classify.state_dict(), path_save)
     return test_accuracy
 
 def run_parameter_tuning():
+    logger = logging.getLogger()
+
+    logger.setLevel(logging.INFO)  # Setup the root logger.
+    logger.addHandler(logging.FileHandler("foo.log", mode="w"))
+
+    optuna.logging.enable_propagation()  # Propagate logs to the root logger
     study = optuna.create_study(study_name= "music classifier", direction="maximize",sampler=optuna.samplers.TPESampler())
+    logger.info("Start optimization.")
     study.optimize(objective, n_trials=hparams.number_of_trials)
     print("Best trial:")
     trial = study.best_trial
@@ -378,9 +418,4 @@ def run_parameter_tuning():
 
 
 if __name__ == '__main__':
-    tarin_loader, valid_loader, test_loader = load_data()
-    feature_extract = False
-    model, inpuut_size = model_cnn2d.initialize_model(model_name='resnet', num_classes=10,
-                                                      feature_extract=feature_extract, use_pretrained=False)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    train_cnn_2d_pre_net(tarin_loader, valid_loader, test_loader, music_classify=model)
+    run_parameter_tuning()
