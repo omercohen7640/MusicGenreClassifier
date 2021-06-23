@@ -18,6 +18,7 @@ class HParams(object):
         self.minimum_legnth = 660_000
         self.number_of_trials = 20
         self.warmup_epochs = 3
+        self.warmup_factor = 1e2
 
 
         # Training Parameters
