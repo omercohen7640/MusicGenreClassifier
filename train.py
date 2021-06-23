@@ -28,6 +28,7 @@ import model_cnn2d
 import optuna
 import warmup as my_warmup
 import resnet_dropout
+from datetime import datetime as dt
 
 
 
@@ -284,7 +285,11 @@ def objective(trial):
 
 
 def train_for_optuna(trial):
-    music_classify = model = resnet_dropout.resnet18()
+    now = dt.now()
+    dt_string = now.strftime("%d%m%Y%H%M")
+    path = os.path.join(os.getcwd(),"trial_"+dt_string)
+    os.mkdir(path)
+    music_classify=resnet_dropout.resnet18()
     print("loading data...")
     train_loader, valid_loader, test_loader = load_data()
     print("starting training...")
@@ -304,7 +309,9 @@ def train_for_optuna(trial):
     num_steps = warmup_epochs*len(train_loader)
 
     warmuper = my_warmup.LinearWarmuper(optimizer=optimizer,steps=num_steps, factor = warmup_factor)
+    print("warmup section...")
     for w_epoch in range(warmup_epochs+1):
+        print("info: lr={}".format(get_lr(optimizer)))
         total_tracks = 0
         total_correct = 0
         epoch_time = time.time()
@@ -319,7 +326,6 @@ def train_for_optuna(trial):
             inputs[:, 1, :, :] = waveform
             inputs[:, 2, :, :] = waveform
             inputs = inputs.to(device)
-            outputs = music_classify(inputs)
             outputs = music_classify(inputs)
             loss = criterion(outputs, label)
             running_loss += loss.data.item()
@@ -337,17 +343,17 @@ def train_for_optuna(trial):
         log = "Epoch: {}  training loss: {:.3f} | train acc: {}| time: {}".format(w_epoch, running_loss,
                                                                           model_accuracy,epoch_time)
         print(log)
-
+    best_valid_acc = 0
     # warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
     ephocs = trial.suggest_int("ephocs",20,45)
     print("starting train loop...")
     for epoch in range(1, ephocs + 1):
+        print("info: lr={}".format(get_lr(optimizer)))
         music_classify.train()
         running_loss = 0.0
         epoch_time = time.time()
         total_tracks = 0
         total_correct = 0
-        print("info: lr={}".format(get_lr(optimizer)))
 
         for i, data in enumerate(train_loader):
             waveform, label = data
@@ -378,10 +384,17 @@ def train_for_optuna(trial):
                                                                                                   model_accuracy,
                                                                                                   valid_accuracy,
                                                                                                   epoch_time)
+        if valid_accuracy > best_valid_acc:
+            best_valid_acc = valid_accuracy
+            path_save = os.path.join(path,"best_model")
+            torch.save(music_classify.state_dict(),path_save)
+
         print(log)
         scheduler.step(metrics=valid_accuracy)
         # warmup_scheduler.dampen()
     test_accuracy, _, _ = calculate_accuracy(music_classify, test_loader, device, criterion=criterion)
+    path_save = os.path.join(path, "last_model")
+    torch.save(music_classify.state_dict(), path_save)
     return test_accuracy
 
 def run_parameter_tuning():
