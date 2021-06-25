@@ -1,197 +1,197 @@
-    "blues.00000",
-    "blues.00001",
-    "blues.00002",
-    "blues.00003",
-    "blues.00004",
-    "blues.00005",
-    "blues.00006",
-    "blues.00007",
-    "blues.00008",
-    "blues.00009",
-    "blues.00010",
-    "blues.00011",
-    "blues.00050",
-    "blues.00051",
-    "blues.00052",
-    "blues.00053",
-    "blues.00054",
-    "blues.00055",
-    "blues.00056",
-    "blues.00057",
-    "blues.00058",
-    "blues.00059",
-    "blues.00060",
-    "classical.00000",
-    "classical.00001",
-    "classical.00002",
-    "classical.00003",
-    "classical.00004",
-    "classical.00005",
-    "classical.00006",
-    "classical.00007",
-    "classical.00008",
-    "classical.00009",
-    "classical.00010",
-    "classical.00068",
-    "classical.00069",
-    "classical.00070",
-    "classical.00071",
-    "classical.00072",
-    "classical.00073",
-    "classical.00074",
-    "classical.00075",
-    "classical.00076",
-    "country.00000",
-    "country.00001",
-    "country.00002",
-    "country.00003",
-    "country.00004",
-    "country.00005",
-    "country.00006",
-    "country.00007",
-    "country.00009",
-    "country.00010",
-    "country.00011",
-    "country.00012",
-    "country.00013",
-    "country.00014",
-    "country.00015",
-    "country.00016",
-    "country.00017",
-    "country.00018",
-    "country.00027",
-    "country.00041",
-    "country.00042",
-    "country.00045",
-    "country.00049",
-    "disco.00000",
-    "disco.00002",
-    "disco.00003",
-    "disco.00004",
-    "disco.00006",
-    "disco.00007",
-    "disco.00008",
-    "disco.00009",
-    "disco.00010",
-    "disco.00011",
-    "disco.00012",
-    "disco.00013",
-    "disco.00014",
-    "disco.00046",
-    "disco.00048",
-    "disco.00052",
-    "disco.00067",
-    "disco.00068",
-    "disco.00072",
-    "disco.00075",
-    "disco.00090",
-    "disco.00095",
-    "hiphop.00081",
-    "hiphop.00082",
-    "hiphop.00083",
-    "hiphop.00084",
-    "hiphop.00085",
-    "hiphop.00086",
-    "hiphop.00087",
-    "hiphop.00088",
-    "hiphop.00089",
-    "hiphop.00090",
-    "hiphop.00091",
-    "hiphop.00092",
-    "hiphop.00093",
-    "hiphop.00094",
-    "hiphop.00095",
-    "hiphop.00096",
-    "hiphop.00097",
-    "hiphop.00098",
-    "jazz.00002",
-    "jazz.00003",
-    "jazz.00004",
-    "jazz.00005",
-    "jazz.00006",
-    "jazz.00007",
-    "jazz.00008",
-    "jazz.00009",
-    "jazz.00010",
-    "jazz.00025",
-    "jazz.00026",
-    "jazz.00027",
-    "jazz.00028",
-    "jazz.00029",
-    "jazz.00030",
-    "jazz.00031",
-    "jazz.00032",
-    "metal.00000",
-    "metal.00001",
-    "metal.00006",
-    "metal.00007",
-    "metal.00008",
-    "metal.00009",
-    "metal.00010",
-    "metal.00011",
-    "metal.00016",
-    "metal.00017",
-    "metal.00018",
-    "metal.00019",
-    "metal.00020",
-    "metal.00036",
-    "metal.00037",
-    "metal.00068",
-    "metal.00076",
-    "metal.00077",
-    "metal.00081",
-    "metal.00082",
-    "pop.00010",
-    "pop.00053",
-    "pop.00055",
-    "pop.00058",
-    "pop.00059",
-    "pop.00060",
-    "pop.00061",
-    "pop.00062",
-    "pop.00081",
-    "pop.00083",
-    "pop.00084",
-    "pop.00085",
-    "pop.00086",
-    "reggae.00061",
-    "reggae.00062",
-    "reggae.00070",
-    "reggae.00072",
-    "reggae.00074",
-    "reggae.00076",
-    "reggae.00077",
-    "reggae.00078",
-    "reggae.00085",
-    "reggae.00092",
-    "reggae.00093",
-    "reggae.00094",
-    "reggae.00095",
-    "reggae.00096",
-    "reggae.00097",
-    "reggae.00098",
-    "reggae.00099",
-    "rock.00038",
-    "rock.00049",
-    "rock.00050",
-    "rock.00051",
-    "rock.00052",
-    "rock.00053",
-    "rock.00054",
-    "rock.00055",
-    "rock.00056",
-    "rock.00071",
-    "rock.00072",
-    "rock.00073",
-    "rock.00074",
-    "rock.00075",
-    "rock.00076",
-    "rock.00077",
-    "rock.00078",
-    "rock.00079",
-    "rock.00080",
-    "rock.00081",
-    "rock.00082",
-    "rock.00083",
-    "rock.00084",
-    "rock.00085",
+blues/blues.00000.wav
+blues/blues.00001.wav
+blues/blues.00002.wav
+blues/blues.00003.wav
+blues/blues.00004.wav
+blues/blues.00005.wav
+blues/blues.00006.wav
+blues/blues.00007.wav
+blues/blues.00008.wav
+blues/blues.00009.wav
+blues/blues.00010.wav
+blues/blues.00011.wav
+blues/blues.00050.wav
+blues/blues.00051.wav
+blues/blues.00052.wav
+blues/blues.00053.wav
+blues/blues.00054.wav
+blues/blues.00055.wav
+blues/blues.00056.wav
+blues/blues.00057.wav
+blues/blues.00058.wav
+blues/blues.00059.wav
+blues/blues.00060.wav
+classical/classical.00000.wav
+classical/classical.00001.wav
+classical/classical.00002.wav
+classical/classical.00003.wav
+classical/classical.00004.wav
+classical/classical.00005.wav
+classical/classical.00006.wav
+classical/classical.00007.wav
+classical/classical.00008.wav
+classical/classical.00009.wav
+classical/classical.00010.wav
+classical/classical.00068.wav
+classical/classical.00069.wav
+classical/classical.00070.wav
+classical/classical.00071.wav
+classical/classical.00072.wav
+classical/classical.00073.wav
+classical/classical.00074.wav
+classical/classical.00075.wav
+classical/classical.00076.wav
+country/country.00000.wav
+country/country.00001.wav
+country/country.00002.wav
+country/country.00003.wav
+country/country.00004.wav
+country/country.00005.wav
+country/country.00006.wav
+country/country.00007.wav
+country/country.00009.wav
+country/country.00010.wav
+country/country.00011.wav
+country/country.00012.wav
+country/country.00013.wav
+country/country.00014.wav
+country/country.00015.wav
+country/country.00016.wav
+country/country.00017.wav
+country/country.00018.wav
+country/country.00027.wav
+country/country.00041.wav
+country/country.00042.wav
+country/country.00045.wav
+country/country.00049.wav
+disco/disco.00000.wav
+disco/disco.00002.wav
+disco/disco.00003.wav
+disco/disco.00004.wav
+disco/disco.00006.wav
+disco/disco.00007.wav
+disco/disco.00008.wav
+disco/disco.00009.wav
+disco/disco.00010.wav
+disco/disco.00011.wav
+disco/disco.00012.wav
+disco/disco.00013.wav
+disco/disco.00014.wav
+disco/disco.00046.wav
+disco/disco.00048.wav
+disco/disco.00052.wav
+disco/disco.00067.wav
+disco/disco.00068.wav
+disco/disco.00072.wav
+disco/disco.00075.wav
+disco/disco.00090.wav
+disco/disco.00095.wav
+hiphop/hiphop.00081.wav
+hiphop/hiphop.00082.wav
+hiphop/hiphop.00083.wav
+hiphop/hiphop.00084.wav
+hiphop/hiphop.00085.wav
+hiphop/hiphop.00086.wav
+hiphop/hiphop.00087.wav
+hiphop/hiphop.00088.wav
+hiphop/hiphop.00089.wav
+hiphop/hiphop.00090.wav
+hiphop/hiphop.00091.wav
+hiphop/hiphop.00092.wav
+hiphop/hiphop.00093.wav
+hiphop/hiphop.00094.wav
+hiphop/hiphop.00095.wav
+hiphop/hiphop.00096.wav
+hiphop/hiphop.00097.wav
+hiphop/hiphop.00098.wav
+jazz/jazz.00002.wav
+jazz/jazz.00003.wav
+jazz/jazz.00004.wav
+jazz/jazz.00005.wav
+jazz/jazz.00006.wav
+jazz/jazz.00007.wav
+jazz/jazz.00008.wav
+jazz/jazz.00009.wav
+jazz/jazz.00010.wav
+jazz/jazz.00025.wav
+jazz/jazz.00026.wav
+jazz/jazz.00027.wav
+jazz/jazz.00028.wav
+jazz/jazz.00029.wav
+jazz/jazz.00030.wav
+jazz/jazz.00031.wav
+jazz/jazz.00032.wav
+metal/metal.00000.wav
+metal/metal.00001.wav
+metal/metal.00006.wav
+metal/metal.00007.wav
+metal/metal.00008.wav
+metal/metal.00009.wav
+metal/metal.00010.wav
+metal/metal.00011.wav
+metal/metal.00016.wav
+metal/metal.00017.wav
+metal/metal.00018.wav
+metal/metal.00019.wav
+metal/metal.00020.wav
+metal/metal.00036.wav
+metal/metal.00037.wav
+metal/metal.00068.wav
+metal/metal.00076.wav
+metal/metal.00077.wav
+metal/metal.00081.wav
+metal/metal.00082.wav
+pop/pop.00010.wav
+pop/pop.00053.wav
+pop/pop.00055.wav
+pop/pop.00058.wav
+pop/pop.00059.wav
+pop/pop.00060.wav
+pop/pop.00061.wav
+pop/pop.00062.wav
+pop/pop.00081.wav
+pop/pop.00083.wav
+pop/pop.00084.wav
+pop/pop.00085.wav
+pop/pop.00086.wav
+reggae/reggae.00061.wav
+reggae/reggae.00062.wav
+reggae/reggae.00070.wav
+reggae/reggae.00072.wav
+reggae/reggae.00074.wav
+reggae/reggae.00076.wav
+reggae/reggae.00077.wav
+reggae/reggae.00078.wav
+reggae/reggae.00085.wav
+reggae/reggae.00092.wav
+reggae/reggae.00093.wav
+reggae/reggae.00094.wav
+reggae/reggae.00095.wav
+reggae/reggae.00096.wav
+reggae/reggae.00097.wav
+reggae/reggae.00098.wav
+reggae/reggae.00099.wav
+rock/rock.00038.wav
+rock/rock.00049.wav
+rock/rock.00050.wav
+rock/rock.00051.wav
+rock/rock.00052.wav
+rock/rock.00053.wav
+rock/rock.00054.wav
+rock/rock.00055.wav
+rock/rock.00056.wav
+rock/rock.00071.wav
+rock/rock.00072.wav
+rock/rock.00073.wav
+rock/rock.00074.wav
+rock/rock.00075.wav
+rock/rock.00076.wav
+rock/rock.00077.wav
+rock/rock.00078.wav
+rock/rock.00079.wav
+rock/rock.00080.wav
+rock/rock.00081.wav
+rock/rock.00082.wav
+rock/rock.00083.wav
+rock/rock.00084.wav
+rock/rock.00085.wav
