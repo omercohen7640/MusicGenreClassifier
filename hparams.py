@@ -21,7 +21,7 @@ class HParams(object):
         self.warmup_factor = 1e2
         self.aug_number = 5
         self.dropout = 0.2
-
+        self.number_of_chunks = 8
         # Training Parameters
         self.device = 1  # 0: CPU, 1: GPU0, 2: GPU1, ...
         self.batch_size = 256

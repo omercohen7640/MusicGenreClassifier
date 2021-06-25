@@ -105,8 +105,8 @@ def train():
 
 
 def load_data():
-    train_loader, valid_loader, test_loader = datamanager_ver2.get_dataloader(hparams);
-    return train_loader, valid_loader, test_loader
+    train_loader, valid_loader, test_loader , test_ensemble_loader= datamanager_ver2.get_dataloader(hparams);
+    return train_loader, valid_loader, test_loader, test_ensemble_loader
 def train_cnn_2d(train_loader, valid_loader, test_loader,music_classify = model_cnn2d.CNN_2D_V2(hparams) ):
     print("starting training...")
 
@@ -156,7 +156,10 @@ def train_cnn_2d(train_loader, valid_loader, test_loader,music_classify = model_
 
 def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify = model_cnn2d.CNN_2D_V2(hparams) ):
     print("starting training...")
-
+    now = dt.now()
+    dt_string = now.strftime("%d%m%Y%H%M")
+    path = os.path.join(os.getcwd(),"trial_"+dt_string)
+    os.mkdir(path)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     criterion = nn.CrossEntropyLoss()
     lr = hparams.learning_rate
@@ -187,7 +190,6 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
             inputs[:, 2, :, :] = waveform
             inputs = inputs.to(device)
             outputs = music_classify(inputs)
-            outputs = music_classify(inputs)
             loss = criterion(outputs, label)
             running_loss += loss.data.item()
             _, predicted = torch.max(outputs.data, 1)
@@ -203,7 +205,7 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
         epoch_time = time.time() - epoch_time
         log = "Epoch: {}  training loss: {:.3f} | train acc: {}| time: {}".format(w_epoch, running_loss,model_accuracy,epoch_time)
         print(log)
-
+    best_valid_acc = 0
     number_of_ephocs = hparams.num_epochs
     print("starting train loop...")
     for epoch in range(1, number_of_ephocs + 1):
@@ -243,8 +245,14 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
                                                                                    epoch_time)
         print(log)
         scheduler.step(metrics=valid_accuracy)
-        #warmup_scheduler.dampen()
+        if valid_accuracy > best_valid_acc:
+            best_valid_acc = valid_accuracy
+            path_save = os.path.join(path, "best_model")
+            torch.save(music_classify.state_dict(), path_save)
+
     test_accuracy,_,_ =  calculate_accuracy(music_classify,test_loader,device,criterion=criterion)
+    path_save = os.path.join(path, "last_model")
+    torch.save(music_classify.state_dict(), path_save)
     return test_accuracy
 
 
@@ -416,6 +424,57 @@ def run_parameter_tuning():
     for key, value in trial.params.items():
         print("    {}: {}".format(key, value))
 
+def test_ensemble(model,test_ensemble_loader,ensamble_method='soft'):
+    if ensamble_method not in ['soft','hard']:
+        print('wrong ensamble method')
+        return
+    model.eval()  # put in evaluation mode
+    criterion = nn.CrossEntropyLoss()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    total_correct = 0
+    total_images = 0
+    confusion_matrix = np.zeros([10, 10], int)
+    runningn_loss = 0
+
+    with torch.no_grad():
+        for data in test_ensemble_loader:
+            images, labels = data
+            outputs = torch.zeros((1, 10))
+            for i in range(hparams.number_of_chunks):
+                images = images.to(device)
+                size = images.size()
+                inputs = torch.zeros(size[0], 3, size[2], size[3])
+                inputs[:, 0, :, :] = images[:,i,:,:]
+                inputs[:, 1, :, :] = images[:,i,:,:]
+                inputs[:, 2, :, :] = images[:,i,:,:]
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+                out = model(inputs)
+                if ensamble_method == 'soft':
+                    outputs += out
+                elif ensamble_method== 'hard':
+                    _,pred = torch.max(out,1)
+                    outputs[0,pred] += 1
+
+            _, predicted = torch.max(outputs,1)
+            loss = criterion(outputs, labels)
+            total_images += labels.size(0)
+            total_correct += (predicted == labels).sum().item()
+            runningn_loss += loss
+            for i, l in enumerate(labels):
+                confusion_matrix[l.item(), predicted[i].item()] += 1
+    runningn_loss /= len(test_ensemble_loader)
+    model_accuracy = total_correct / total_images * 100
+    return model_accuracy, confusion_matrix, runningn_loss
+
 
 if __name__ == '__main__':
-    run_parameter_tuning()
+    criterion = nn.CrossEntropyLoss()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    train_loader, valid_loader, test_loader,test_ensemble_loader = load_data()
+    model = resnet_dropout.resnet18()
+    #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model)
+    model.load_state_dict(torch.load(os.path.join('/home/raveh.be@staff.technion.ac.il/trial_240620211745/best_model')))
+    model,mat,los = test_ensemble(model,test_ensemble_loader,'hard')
+    model, mat, los = calculate_accuracy(model, test_loader, device, criterion)
+    print(model)
