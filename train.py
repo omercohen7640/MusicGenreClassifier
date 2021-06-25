@@ -29,7 +29,8 @@ import optuna
 import warmup as my_warmup
 import resnet_dropout
 from datetime import datetime as dt
-
+import audio_augmentation_joni
+import feature_extraction
 
 
 def get_lr(optimizer):
@@ -115,7 +116,7 @@ def train_cnn_2d(train_loader, valid_loader, test_loader,music_classify = model_
     lr = hparams.learning_rate
     optimizer = torch.optim.Adam(music_classify.parameters(), lr=lr)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=hparams.factor, patience=hparams.patience, verbose=True)
-    warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
+    #warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
     number_of_ephocs = hparams.num_epochs
     print("starting train loop...")
     for epoch in range(1, number_of_ephocs + 1):
@@ -154,7 +155,7 @@ def train_cnn_2d(train_loader, valid_loader, test_loader,music_classify = model_
 
 
 
-def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify = model_cnn2d.CNN_2D_V2(hparams) ):
+def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader=None,music_classify = model_cnn2d.CNN_2D_V2(hparams) ):
     print("starting training...")
     now = dt.now()
     dt_string = now.strftime("%d%m%Y%H%M")
@@ -167,7 +168,7 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
     init_lr = lr / warmup_factor
 
     optimizer = torch.optim.Adam(music_classify.parameters(), lr=init_lr, weight_decay=hparams.weight_decay)
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=hparams.factor, patience=hparams.patience, verbose=True)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer,threshold=5e-1, mode='max', factor=hparams.factor, patience=hparams.patience, verbose=True)
     #warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
     print("begin warmup loop...")
     warmup_epochs = hparams.warmup_epochs
@@ -249,11 +250,12 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader,music_classify 
             best_valid_acc = valid_accuracy
             path_save = os.path.join(path, "best_model")
             torch.save(music_classify.state_dict(), path_save)
+    if test_loader is not None:
+        test_accuracy,_,_ =  calculate_accuracy(music_classify,test_loader,device,criterion=criterion)
+        path_save = os.path.join(path, "last_model")
+        torch.save(music_classify.state_dict(), path_save)
+        return test_accuracy
 
-    test_accuracy,_,_ =  calculate_accuracy(music_classify,test_loader,device,criterion=criterion)
-    path_save = os.path.join(path, "last_model")
-    torch.save(music_classify.state_dict(), path_save)
-    return test_accuracy
 
 
 def calculate_accuracy(model, dataloader, device , criterion):
@@ -424,7 +426,7 @@ def run_parameter_tuning():
     for key, value in trial.params.items():
         print("    {}: {}".format(key, value))
 
-def test_ensemble(model,test_ensemble_loader,ensamble_method='soft'):
+def test_ensemble(model,model_expert, test_ensemble_loader,ensamble_method='soft'):
     if ensamble_method not in ['soft','hard']:
         print('wrong ensamble method')
         return
@@ -453,10 +455,27 @@ def test_ensemble(model,test_ensemble_loader,ensamble_method='soft'):
                 if ensamble_method == 'soft':
                     outputs += out
                 elif ensamble_method== 'hard':
-                    _,pred = torch.max(out,1)
-                    outputs[0,pred] += 1
-
-            _, predicted = torch.max(outputs,1)
+                    _,mini_pred = torch.max(out,1)
+                    outputs[0,mini_pred] += 1
+            _, temppred = torch.max(outputs,1)
+            if temppred in [8,9]:
+                outputs = torch.zeros((1, 10))
+                for i in range(hparams.number_of_chunks):
+                    images = images.to(device)
+                    size = images.size()
+                    inputs = torch.zeros(size[0], 3, size[2], size[3])
+                    inputs[:, 0, :, :] = images[:, i, :, :]
+                    inputs[:, 1, :, :] = images[:, i, :, :]
+                    inputs[:, 2, :, :] = images[:, i, :, :]
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
+                    out = model_expert(inputs)
+                    if ensamble_method == 'soft':
+                        outputs += out
+                    elif ensamble_method == 'hard':
+                        _, pred = torch.max(out, 1)
+                        outputs[0,8 + pred] += 1
+            _, predicted = torch.max(outputs, 1)
             loss = criterion(outputs, labels)
             total_images += labels.size(0)
             total_correct += (predicted == labels).sum().item()
@@ -472,9 +491,17 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     train_loader, valid_loader, test_loader,test_ensemble_loader = load_data()
-    model = resnet_dropout.resnet18()
-    #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model)
-    model.load_state_dict(torch.load(os.path.join('/home/raveh.be@staff.technion.ac.il/trial_240620211745/best_model')))
-    model,mat,los = test_ensemble(model,test_ensemble_loader,'hard')
-    model, mat, los = calculate_accuracy(model, test_loader, device, criterion)
-    print(model)
+    model10 = resnet_dropout.resnet18(num_classes=10)
+    #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model10)
+    #model2 = resnet_dropout.resnet18(num_classes=2)
+    #train_extra, valid_extra = datamanager_ver2.get_extra_loaders(hparams)
+    #train_cnn_2d_pre_net(train_extra, valid_extra, None, model2)
+    #print(model2)
+    model10.load_state_dict(torch.load('/home/raveh.be@staff.technion.ac.il/trial_250620211137/best_model'))
+    #model2.load_state_dict(torch.load('/home/raveh.be@staff.technion.ac.il/trial_250620211356/best_model'))
+    #model.load_state_dict(torch.load(os.path.join('/home/raveh.be@staff.technion.ac.il/trial_240620211745/best_model')))
+    #model_acc_en,mat_en,_ = test_ensemble(model10,model2, test_ensemble_loader,'hard')
+    model_acc, mat_acc, _ = calculate_accuracy(model10, test_loader, device, criterion)
+    print(model_acc)
+    #audio_augmentation_joni.main_reduced(option="High",genres = ['rock','blues'],extra = True)
+    #feature_extraction.main()

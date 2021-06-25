@@ -8,6 +8,8 @@ from set_lists import *
 
 def rnd_numbers_list(low,high):
     length = hparams.aug_number
+    if length == 8:
+        return range(8)
     number = np.random.randint(low,(high+1))
     number_l = [number]
     while len(number_l) < length:
@@ -195,61 +197,81 @@ def main():
                                      samplerate=hparams.sample_rate)
         print('finished')
 
-def main_reduced( option = "Low" ):
+def main_reduced( option = "Low",genres = None,extra = False ):
     print('Reduced Augmentation')
+    if extra:
+        for g in genres:
+            genre_path = os.path.join(hparams.genres_path,str(g)+'_extra')
+            if not os.path.exists(genre_path):
+                os.mkdir(genre_path)
 
-    genres = get_genre(hparams)
     list_names = ['train_list.txt']
     for list_name in list_names:
         file_names = load_list(list_name, hparams)#train list
-        with open(os.path.join(hparams.dataset_path, str(list_name)+"_aug"),'w') as f:
+        if extra:
+            text_file_path = os.path.join(hparams.dataset_path, str(list_name)+"_aug_extra")
+        else:
+            text_file_path = os.path.join(hparams.dataset_path, str(list_name)+"_aug")
+        with open(text_file_path ,'w') as f:
             for i in file_names:
                 number_l = rnd_numbers_list(0,7)
                 genre = i.split('/')[0]
+                if extra and genre not in genres:
+                    continue
                 file_name = os.path.join(hparams.genres_path,i)
                 y, sr = readfile(file_name, hparams)
-                save_path = os.path.join(hparams.genres_path,genre)
+                if extra:
+                    save_path = os.path.join(hparams.genres_path,str(genre)+'_extra')
+                else:
+                    save_path = os.path.join(hparams.genres_path,genre)
                 save_name = i.split('/')[1]
-                f.writelines(i + '\n')
+                if not extra:
+                    f.writelines(i + '\n')
                 print(file_name," - ",number_l)
+                if extra:
+                    prefix = i.split('/')[0]+'_extra'
+                    file_line = prefix +'/'+ i.replace('.wav', 'a.wav' + '\n').split('/')[1]
+                else:
+                    file_line = i.replace('.wav', 'a.wav' + '\n')
                 for number in number_l:
+
                     if number == 0:
-                        f.writelines(i.replace('.wav', 'a.wav' + '\n'))
+                        f.writelines(file_line)
                         data_noise = add_noise(y,option=option)
                         sf.write(file=os.path.join(save_path, save_name.replace('.wav', 'a.wav')), data=data_noise,
                                  samplerate=hparams.sample_rate)
                     elif number == 1:
-                        f.writelines(i.replace('.wav', 'b.wav' + '\n'))
+                        f.writelines(file_line)
                         data_roll = shift(y,option=option)
                         sf.write(file=os.path.join(save_path, save_name.replace('.wav', 'b.wav')), data=data_roll,
                                  samplerate=hparams.sample_rate)
                     elif number == 2:
-                        f.writelines(i.replace('.wav', 'c.wav' + '\n'))
+                        f.writelines(file_line)
                         data_stretch = stretch(y,option=option)
                         sf.write(file=os.path.join(save_path, save_name.replace('.wav', 'c.wav')), data=data_stretch,
                                  samplerate=hparams.sample_rate)
                     elif number == 3:
-                        f.writelines(i.replace('.wav', 'd.wav' + '\n'))
+                        f.writelines(file_line)
                         pitch_speed = change_pitch_and_speed(y,hparams.sample_rate,option=option)
                         sf.write(file=os.path.join(save_path, save_name.replace('.wav', 'd.wav')), data=pitch_speed,
                                  samplerate=hparams.sample_rate)
                     elif number == 4:
-                        f.writelines(i.replace('.wav', 'e.wav' + '\n'))
+                        f.writelines(file_line)
                         pitch = change_pitch(y, hparams.sample_rate)
                         sf.write(file=os.path.join(save_path, save_name.replace('.wav', 'e.wav')), data=pitch,
                                  samplerate=hparams.sample_rate)
                     elif number == 5:
-                        f.writelines(i.replace('.wav', 'f.wav' + '\n'))
+                        f.writelines(file_line)
                         speed = change_speed(y,option=option)
                         sf.write(file=os.path.join(save_path, save_name.replace('.wav', 'f.wav')), data=speed,
                                  samplerate=hparams.sample_rate)
                     elif number == 6:
-                        f.writelines(i.replace('.wav', 'g.wav' + '\n'))
+                        f.writelines(file_line)
                         value = value_aug(y,option=option)
                         sf.write(file=os.path.join(save_path, save_name.replace('.wav', 'g.wav')), data=value,
                                  samplerate=hparams.sample_rate)
                     elif number == 7:
-                        f.writelines(i.replace('.wav', 'h.wav' + '\n'))
+                        f.writelines(file_line)
                         y_harmonic, y_percussive = hpss(y,option=option)
                         sf.write(file=os.path.join(save_path, save_name.replace('.wav', 'h.wav')), data=y_percussive,
                                  samplerate=hparams.sample_rate)

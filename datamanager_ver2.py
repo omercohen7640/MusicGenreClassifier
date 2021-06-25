@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
 import glob
 
 class GTZANDataset(Dataset):
@@ -15,12 +16,15 @@ class GTZANDataset(Dataset):
         return self.x.shape[0]
 
 # Function to get genre index for the give file
-def get_label(file_name, hparams):
+def get_label(file_name, hparams,extra):
     genre = file_name.split('.')[0]
-    label = hparams.genres.index(genre)
+    if extra:
+        label = hparams.genres_expert.index(genre)
+    else:
+        label = hparams.genres.index(genre)
     return label
 
-def load_dataset(set_name, hparams):
+def load_dataset(set_name, hparams,extra = False):
     x = []
     y = []
 
@@ -28,7 +32,7 @@ def load_dataset(set_name, hparams):
     for root,dirs,files in os.walk(dataset_path):
         for file in files:
             data = np.load(os.path.join(root,file))
-            label = get_label(file, hparams)
+            label = get_label(file, hparams,extra)
             x.append(data)
             y.append(label)
 
@@ -46,7 +50,7 @@ def load_ensemble_test_set(hparams):
             track_name = line.split('/')[1].split('.')[1]
             genre = line.split('/')[0]
             path = os.path.join(hparams.feature_path,'test',genre,'*'+str(track_name)+'*')
-            label = get_label(line.split('/')[1], hparams)
+            label = get_label(line.split('/')[1], hparams,extra=False)
             y.append(label)
             x_chunks = []
             for file in glob.glob(path):
@@ -83,3 +87,22 @@ def get_dataloader(hparams):
     test_ensemble_loader = DataLoader(test_ensemble_set, batch_size=1, shuffle=False, drop_last=False)
 
     return train_loader, valid_loader, test_loader, test_ensemble_loader
+
+def get_extra_loaders(hparams,valid_size = 0.2):
+    x_extra, y_extra = load_dataset('train_aug_extra',hparams,extra=True)
+    x_extra = (x_extra - hparams.mean)/hparams.std
+
+    num_train = len(x_extra)
+    indices = list(range(num_train))
+    split = int(np.floor(valid_size * num_train))
+    np.random.shuffle(indices)
+    train_idx, valid_idx = indices[split:], indices[:split]
+    train_sampler = SubsetRandomSampler(train_idx)
+    valid_sampler = SubsetRandomSampler(valid_idx)
+
+    train_extra_set = GTZANDataset(x_extra, y_extra)
+    valid_extra_set = GTZANDataset(x_extra,y_extra)
+
+    train_extra_loader = DataLoader(train_extra_set, batch_size=hparams.batch_size, sampler=train_sampler,drop_last=False)
+    valid_extra_loader = DataLoader(valid_extra_set, batch_size=hparams.batch_size, sampler=valid_sampler,drop_last=False)
+    return train_extra_loader, valid_extra_loader

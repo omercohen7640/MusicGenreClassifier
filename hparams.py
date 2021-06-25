@@ -6,7 +6,7 @@ class HParams(object):
         self.feature_path= './datasets/feature_augment'
         self.genres_path = './datasets/genres'
         self.genres = ['classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock', 'blues']
-
+        self.genres_expert = ['rock', 'blues']
         # Feature Parameters
         self.sample_rate=22050
         self.fft_size = 1024
@@ -19,18 +19,20 @@ class HParams(object):
         self.number_of_trials = 7
         self.warmup_epochs = 3
         self.warmup_factor = 1e2
-        self.aug_number = 5
+        self.aug_number = 8
         self.dropout = 0.2
         self.number_of_chunks = 8
+        self.mean = 0.17226519
+        self.std = 0.22243384
         # Training Parameters
         self.device = 1  # 0: CPU, 1: GPU0, 2: GPU1, ...
         self.batch_size = 256
-        self.num_epochs = 20
-        self.learning_rate = 1e-2
+        self.num_epochs = 5
+        self.learning_rate = 1e-3
         self.stopping_rate = 1e-5
         self.weight_decay = 1e-5
         self.momentum = 0.9
         self.factor = 0.2
-        self.patience = 3
+        self.patience = 2
 
 hparams = HParams()
