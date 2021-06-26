@@ -22,17 +22,20 @@ class HParams(object):
         self.aug_number = 8
         self.dropout = 0.2
         self.number_of_chunks = 8
-        self.mean = 0.17226519
-        self.std = 0.22243384
+        self.mean_low = 0.17226519
+        self.std_low = 0.22243384
+        self.mean_high = 0.18000145
+        self.std_high = 0.2393243
+        self.threshold = 5e-1
         # Training Parameters
         self.device = 1  # 0: CPU, 1: GPU0, 2: GPU1, ...
         self.batch_size = 256
-        self.num_epochs = 5
+        self.num_epochs = 20
         self.learning_rate = 1e-3
         self.stopping_rate = 1e-5
         self.weight_decay = 1e-5
         self.momentum = 0.9
         self.factor = 0.2
-        self.patience = 2
+        self.patience = 3
 
 hparams = HParams()

@@ -24,13 +24,16 @@ def get_label(file_name, hparams,extra):
         label = hparams.genres.index(genre)
     return label
 
-def load_dataset(set_name, hparams,extra = False):
+def load_dataset(set_name, hparams,extra = False,sub_genres = None):
     x = []
     y = []
 
     dataset_path = os.path.join(hparams.feature_path, set_name)
     for root,dirs,files in os.walk(dataset_path):
         for file in files:
+            genre = file.split('.')[0]
+            if sub_genres is not None and genre not in sub_genres:
+                continue
             data = np.load(os.path.join(root,file))
             label = get_label(file, hparams,extra)
             x.append(data)
@@ -63,10 +66,10 @@ def load_ensemble_test_set(hparams):
     y = np.stack(y)
 
     return x,y
-def get_dataloader(hparams):
-    x_train, y_train = load_dataset('train_aug', hparams)
-    x_valid, y_valid = load_dataset('valid', hparams)
-    x_test, y_test = load_dataset('test', hparams)
+def get_dataloader(hparams, sub_genres = None):
+    x_train, y_train = load_dataset('train_aug', hparams,sub_genres=sub_genres)
+    x_valid, y_valid = load_dataset('valid', hparams,sub_genres=sub_genres)
+    x_test, y_test = load_dataset('test', hparams,sub_genres=sub_genres)
     x_test_ensemble, y_test_ensemble = load_ensemble_test_set(hparams)
     mean = np.mean(x_train)
     std = np.std(x_train)

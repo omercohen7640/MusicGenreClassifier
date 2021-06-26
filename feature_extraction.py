@@ -30,7 +30,7 @@ def resize_array(array, length):
 
 def main():
     print("Extracting Feature")
-    list_names = ['train_list.txt_aug','train_list.txt_aug_extra', 'valid_list.txt', 'test_list.txt']
+    list_names = ['train_list.txt_aug', 'valid_list.txt', 'test_list.txt']
 
     for list_name in list_names:
         set_name = list_name.replace('_list.txt', '')
