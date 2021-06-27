@@ -43,7 +43,7 @@ def load_dataset(set_name, hparams,extra = False,sub_genres = None):
     y = np.stack(y)
 
     return x,y
-def load_ensemble_test_set(hparams):
+def load_ensemble_test_set(hparams, sub_genres = None):
     x = []
     y = []
     test_list_path = os.path.join(hparams.dataset_path,'test_list.txt')
@@ -52,6 +52,8 @@ def load_ensemble_test_set(hparams):
         for line in lines:
             track_name = line.split('/')[1].split('.')[1]
             genre = line.split('/')[0]
+            if sub_genres is not None and genre not in sub_genres:
+                continue
             path = os.path.join(hparams.feature_path,'test',genre,'*'+str(track_name)+'*')
             label = get_label(line.split('/')[1], hparams,extra=False)
             y.append(label)
@@ -70,7 +72,7 @@ def get_dataloader(hparams, sub_genres = None):
     x_train, y_train = load_dataset('train_aug', hparams,sub_genres=sub_genres)
     x_valid, y_valid = load_dataset('valid', hparams,sub_genres=sub_genres)
     x_test, y_test = load_dataset('test', hparams,sub_genres=sub_genres)
-    x_test_ensemble, y_test_ensemble = load_ensemble_test_set(hparams)
+    x_test_ensemble, y_test_ensemble = load_ensemble_test_set(hparams, sub_genres=sub_genres)
     mean = np.mean(x_train)
     std = np.std(x_train)
 
