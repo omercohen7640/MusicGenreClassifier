@@ -60,8 +60,14 @@ We have used the following augmentations:
 ### -----
 
 ## 1D-Classifier
-Our first trial  to improve model's performance was to use 1D convnet. 
---- picture of arch----
+Our first trial  to improve model's performance was to work with the raw data and to use 1D convnet. We tried 2 architetures that yileded same performances:
+
+first:
+<img src="/img/1dconvnetver1.png">
+
+second:
+<img src="/img/1dconvnetver12.png">
+
 We tested our model on 10-classes dataset and we got poor 10% accuracy performance (random prediction). We tried to use chopped sub-tracks of different lengths and still the performance didn’t improve.
 At this point we concluded:
 1.	Working with the raw data (without any pre-processing) is more difficult and requires more sophisticated architectures. 
