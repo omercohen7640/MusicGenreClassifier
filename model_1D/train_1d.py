@@ -1,5 +1,7 @@
 from model_2D.train_2D import *
-
+import model_1D.DataManager_1D as DataManager
+import model_1D.model as model
+from model_1D.hparams import hparams
 
 def calculate_accuracy_1d(model, dataloader, device, criterion):
     model = model.to(device)
@@ -137,6 +139,6 @@ def train_1d(train_loader, valid_loader, test_loader, music_classify):
         return test_accuracy
 
 if __name__ == '__main__':
-    model1dver1 = model2.Music1DCNN_ver2()
+    model1dver1 = model.Music1DCNN_ver2()
     train_loader, valid_loader, test_loader = DataManager.get_dataloader(hparams)
     train_1d(train_loader,valid_loader,test_loader,model1dver1)

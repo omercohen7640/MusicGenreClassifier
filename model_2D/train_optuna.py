@@ -1,5 +1,8 @@
 import model_2D.resnet_dropout as resnet_dropout
-import model_2D.datamanager_ver2 as datamanager_ver2
+import logging
+import optuna
+import joblib
+import model_2D.DataManager_2D as DataManager
 from model_2D.train_2D import *
 
 def objective(trial):
@@ -7,7 +10,7 @@ def objective(trial):
     music_classify= resnet_dropout.resnet18(num_classes = 10)
     music_classify= music_classify.to(device)
     print("loading data...")
-    train_loader,valid_loader,_,_ = datamanager_ver2.get_dataloader(hparams, dataset_size=hparams.optuna_ds)
+    train_loader,valid_loader,_,_ = DataManager.get_dataloader(hparams, dataset_size=hparams.optuna_ds)
     test_acc = train_for_optuna(trial=trial,music_classify=music_classify,train_loader=train_loader,valid_loader=valid_loader)
     return test_acc
 
@@ -106,7 +109,7 @@ def train_for_optuna(trial,music_classify, train_loader, valid_loader, test_load
         running_loss /= len(train_loader)
         model_accuracy = total_correct / total_tracks * 100
         epoch_time = time.time() - epoch_time
-        valid_accuracy, _, valid_loss = calculate_accuracy(music_classify, valid_loader, device, criterion)
+        valid_accuracy, _, valid_loss = calculate_accuracy_2d(music_classify, valid_loader, device, criterion)
         log = "Epoch: {}  training loss: {:.3f} | train acc: {}| valid acc: {} | time: {}".format(epoch, running_loss,
                                                                                                   model_accuracy,
                                                                                                   valid_accuracy,

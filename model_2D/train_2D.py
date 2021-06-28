@@ -4,20 +4,14 @@ import numpy as np
 #warnings.filterwarnings('ignore')
 import os
 import torch
-from model_1D import DataManager, model2
-from model_1D.hparams import hparams
 import torch.nn as nn
 import time
 import torch.optim.lr_scheduler as lr_scheduler
-import logging
-#import pytorch_warmup as warmup
-import model_2D.datamanager_ver2
-import model_2D.resnet_dropout
-import optuna
+import model_2D.DataManager_2D as DataManager
+import model_2D.resnet_dropout as resnet_dropout
 import warmup as my_warmup
 from datetime import datetime as dt
-import joblib
-
+from model_2D.hparams import hparams
 
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
@@ -240,32 +234,6 @@ def test_ensemble(model,model_expert, test_ensemble_loader,ensamble_method='soft
 
 
 if __name__ == '__main__':
-    #run_parameter_tuning()
-    #audio_augmentation_joni.main_reduced(option="High")
-    #feature_extraction.main()
-    criterion = nn.CrossEntropyLoss()
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    #train_loader, valid_loader, test_loader,test_ensemble_loader =datamanager_ver2.get_dataloader(hparams,sub_genres=['classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae',])
-    #model8 = resnet_dropout.resnet18(num_classes = 8)
-    #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model8)
-    #model10.load_state_dict(torch.load('/home/raveh.be@staff.technion.ac.il/trial_270620211046/best_model'))
-    #test_acc,test_mat,_ = calculate_accuracy(model10,test_loader,device=device,criterion=criterion)
-    #valid_ac, valid_mat,_ = calculate_accuracy(model10,valid_loader,device,criterion)
-    #model_acc_en,mat_en,_ = test_ensemble(model10,None, test_ensemble_loader,'hard',model_size= 10)
-    #print(model_acc_en)
-    #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model8)
-    #model10 = resnet_dropout.resnet18(num_classes=10)
-    #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model10)
-    #model2 = resnet_dropout.resnet18(num_classes=2)
-    #train_extra, valid_extra = datamanager_ver2.get_extra_loaders(hparams)
-    #train_cnn_2d_pre_net(train_extra, valid_extra, None, model2)
-    #print(model2)
-    #model10.load_state_dict(torch.load('/home/raveh.be@staff.technion.ac.il/trial_270620211046/best_model'))
-    #model2.load_state_dict(torch.load('/home/raveh.be@staff.technion.ac.il/trial_250620211356/best_model'))
-    #model.load_state_dict(torch.load(os.path.join('/home/raveh.be@staff.technion.ac.il/trial_240620211745/best_model')))
-    #model_acc_en,mat_en,_ = test_ensemble(model10,model2, test_ensemble_loader,'hard')
-    #model_acc, mat_acc, _ = calculate_accuracy(model10, test_loader, device, criterion)
-    #print(model_acc)
-    model1dver1 = model2.Music1DCNN_ver2()
+    model1dver1 = resnet_dropout(num_classes = 10)
     train_loader, valid_loader, test_loader = DataManager.get_dataloader(hparams)
-    train_1d(train_loader,valid_loader,test_loader,model1dver1)
+    train_cnn_2d(train_loader,valid_loader,test_loader,model1dver1)
