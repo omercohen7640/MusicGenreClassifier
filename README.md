@@ -31,7 +31,7 @@ Our Project for the Technion's EE 046211 course "Deep Learning"
   * [1D-Classifier](#installation-instructions)
     + [Failer](#Failer)
   * [2D-Classifier](#installation-instructions)
-    + [Feature extraction](#Feature extraction)
+    + [Feature extraction](#Feature-extraction)
     + [Ensaemble](#Ensemble)
 
 
