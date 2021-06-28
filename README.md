@@ -67,7 +67,7 @@ second:
 
 We tested our model on 10-classes dataset and we got poor 10% accuracy performance (random prediction). We tried to use chopped sub-tracks of different lengths and still the performance didn’t improve.
 At this point we concluded:
-1.	Working with the raw data (without any pre-processing) is more difficult and requires more sophisticated architectures. 
+1.	Working with the raw music signal (without any pre-processing) is more difficult and requires more sophisticated architectures. 
 2.	Working with 2D data allows us to use known computer-vision architectures  and techniques.
 
 ## 2D-Classifier
