@@ -13,7 +13,6 @@ Technion EE 046211 - Deep Learning
 Our Project for the Technion's EE 046211 course "Deep Learning"
 * Animation by <a href="https://medium.com/@gumgumadvertisingblog">GumGum</a>.
 * Reference work by <a href="https://github.com/Dohppak/Music_Genre_Classification_Pytorch">Dohppak</a>.
-* 
 <h4 align="center">
     <a href="https://colab.research.google.com/github/taldatech/ee046211-deep-learning"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
     <a href="https://nbviewer.jupyter.org/github/taldatech/ee046211-deep-learning/tree/main/"><img src="https://jupyter.org/assets/main-logo.svg" alt="Open In NBViewer"/></a>
