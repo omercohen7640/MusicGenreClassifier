@@ -101,7 +101,7 @@ that method yielded the following performances:
 
 <img src="/img/ensemble_10.png">
 
-<img src="/img/ensemble_8.png.png">
+<img src="/img/ensemble_8.png">
 
 
 
