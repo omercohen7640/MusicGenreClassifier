@@ -53,8 +53,10 @@ We used the widely used [GTZAN](http://marsyas.info/downloads/datasets.html) dat
 ### -----
 
 ## Data augmentation
-To enlarge our dataset, we used data augmentations. To execute those augmentation easily, we used Librosa package We will explain each kind of augmentation:
+To enlarge our dataset, we used data augmentations. To execute those augmentation easily, we used Librosa package.
+We have used the following augmentations:
 
+<img src="/img/data_aug.png">
 ### -----
 
 ## 1D-Classifier
