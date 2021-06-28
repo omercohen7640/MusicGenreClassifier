@@ -32,8 +32,7 @@ Our Project for the Technion's EE 046211 course "Deep Learning"
     + [Failer](#Failer)
   * [2D-Classifier](#installation-instructions)
     + [Feature extraction](#Feature extraction)
-    + [Sheduler&WarmUp](#Sheduler&WarmUp)
-    + [Tuner](#Tuner)
+    + [Ensaemble](#Ensemble)
   * [Results](#Results)
 
 
@@ -63,10 +62,12 @@ We have used the following augmentations:
 Our first trial  to improve model's performance was to work with the raw data and to use 1D convnet. We tried 2 architetures that yileded same performances:
 
 first:
+
 <img src="/img/1dconvnetver1.png">
 
 second:
-<img src="/img/1dconvnetver12.png">
+
+<img src="/img/1dconvnetver2.png">
 
 We tested our model on 10-classes dataset and we got poor 10% accuracy performance (random prediction). We tried to use chopped sub-tracks of different lengths and still the performance didn’t improve.
 At this point we concluded:
@@ -77,18 +78,20 @@ At this point we concluded:
 ### Feature extraction
 Working with 2D input means transforming the data into time-frequency space of mel-spectrogram. We used Librosa tools to transform the data. Here is an ilustration for the transform:
 
+<img src="/img/original_track.png">
+
+<img src="/img/original_track_db.png">
+
+<img src="/img/mel.png">
+
+
+
+We used resnet18 architecture with dropout.We used Optuna to tune our hyper parameters. That model achieved 62.4% accuracy on the dataset.
 
 
 
 
-After trying 2 models of 1D convnet we've decided to use 2D convnet. We used resnet18 architecture with dropout. Here we used Optuna to tune our hyper parameters. That model achieved 62.4% accuracy on the dataset.
-
-
-
-### Sheduler&WarmUp
-someting....
-
-### Tuner
+### Ensemble
 someting....
 
 
