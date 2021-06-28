@@ -88,7 +88,9 @@ Working with 2D input means transforming the data into time-frequency space of m
 
 We used resnet18 architecture with dropout.We used Optuna to tune our hyper parameters. That model achieved 62.4% accuracy on the dataset.
 
+<img src="/img/model10_graph.png">
 
+<img src="/img/model10_conv_mat.png">
 
 
 ### Ensemble
@@ -96,11 +98,10 @@ We tried to boost our performnaces by using ensemble of classifier. In this meth
 we tried both 'soft' and 'hard' ensembles. 'soft' means summing up the output vectors and then take the argmax as the final prediction, 'hard' means create histogram from all the mini-predictions and take the label that got the majority of the mini-predictions as our final prediction.
 
 that method yielded the following performances:
-|Number of classes      | Accuracy |
-|----------------------|----|
-|`10 classes`|  `----
-|`8 classes`|  `-----`|
 
+<img src="/img/ensemble_10.png">
+
+<img src="/img/ensemble_8.png.png">
 
 
 
