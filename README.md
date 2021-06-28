@@ -42,18 +42,18 @@ Our Project for the Technion's EE 046211 course "Deep Learning"
 
 
 ## Agenda
-here we right things about the goal of the project
+As our final project in Deep Learning course we have been asked to choose a problem and to solve it using neural network and deep learning techniques. We chose to implement DL algorithm that classify music track's genre.
 
 ## MusicGenreClassifier
-here we right things about what we are trying to solve and the benefits - classefy user music intres and recommend new music ect.
+ The algorithm's input is a 30 seconds long music track, and the output is one of the following genres: Blues, Rock, Classic, Reggae, Disco, Country, Hip-Hop, Metal, Jazz and Pop. Throughout our work we experimented several approches to solve this problem both via the data and the architecture
 
 ## Dataset
-here we right things about the [GTZAN](http://marsyas.info/downloads/datasets.html) dataset
+We used the widely used [GTZAN](http://marsyas.info/downloads/datasets.html) dataset. the dataset includes 10 classes of music genres. Each class contains 100 tracks of 30 seconds. that is, we faced a low-amount-of-data problem.
 
 ### -----
 
 ## Data augmentation
-here we right things about the diffrent Data augmentation we are using on the Data we have and when are we applying them.
+To enlarge our dataset, we used data augmentations. To execute those augmentation easily, we used Librosa package We will explain each kind of augmentation:
 
 ### -----
 
