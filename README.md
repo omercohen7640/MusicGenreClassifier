@@ -38,7 +38,7 @@ Our Project for the Technion's EE 046211 course "Deep Learning"
 
 
 ## Agenda
-As our final project in Deep Learning course we have been asked to choose a problem and to solve it using neural network and deep learning techniques. We chose to implement DL algorithm that classify music track's genre.
+As our final project in Deep Learning course we have been asked to choose a problem and to solve it using neural network and deep learning techniques. We chose to implement DL algorithm that classifies genre of music track.
 
 ## MusicGenreClassifier
  The algorithm's input is a 30 seconds long music track, and the output is one of the following genres: Blues, Rock, Classic, Reggae, Disco, Country, Hip-Hop, Metal, Jazz and Pop. Throughout our work we experimented several approches to solve this problem both via the data and the architecture
