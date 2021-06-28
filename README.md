@@ -46,14 +46,13 @@ As our final project in Deep Learning course we have been asked to choose a prob
 ## Dataset
 We used the widely used [GTZAN](http://marsyas.info/downloads/datasets.html) dataset. the dataset includes 10 classes of music genres. Each class contains 100 tracks of 30 seconds. that is, we faced a low-amount-of-data problem.
 
-### -----
 
 ## Data augmentation
 To enlarge our dataset, we used data augmentations. To execute those augmentation easily, we used Librosa package.
 We have used the following augmentations:
 
 <img src="/img/data_aug.png">
-### -----
+
 
 ## 1D-Classifier
 Our first trial  to improve model's performance was to work with the raw data and to use 1D convnet. We tried 2 architetures that yileded same performances:
