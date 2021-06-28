@@ -82,7 +82,7 @@ Working with 2D input means transforming the data into time-frequency space of m
 
 
 
-We used resnet18 architecture with dropout.We used Optuna to tune our hyper parameters. That model achieved 62.4% accuracy on the dataset.
+We used resnet18 architecture with dropout. To tune our hyper-parameters we used Optuna. That model achieved 62.4% accuracy on the test-set.
 
 <img src="/img/model10_graph.png">
 
@@ -90,10 +90,10 @@ We used resnet18 architecture with dropout.We used Optuna to tune our hyper para
 
 
 ### Ensemble
-We tried to boost our performnaces by using ensemble of classifier. In this method we chop each track to sub-tracks and predict label to each sub-track independently.
-we tried both 'soft' and 'hard' ensembles. 'soft' means summing up the output vectors and then take the argmax as the final prediction, 'hard' means create histogram from all the mini-predictions and take the label that got the majority of the mini-predictions as our final prediction.
+We tried to boost our performnaces by using ensemble of classifiers. In this method we chop each track to sub-tracks and predict label for each sub-track independently.
+we tried both 'soft' and 'hard' ensembles. 'soft' means summing up the output vectors and then taking the arg-max as the final prediction, 'hard' means create histogram from all the mini-predictions and take the label that got the majority of the mini-predictions as our final prediction.
 
-that method yielded the following performances:
+that method using soft ensemble yielded the following performances:
 
 <img src="/img/ensemble_10.png">
 
