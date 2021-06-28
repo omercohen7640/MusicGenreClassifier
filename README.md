@@ -33,7 +33,7 @@ Our Project for the Technion's EE 046211 course "Deep Learning"
   * [2D-Classifier](#installation-instructions)
     + [Feature extraction](#Feature extraction)
     + [Ensaemble](#Ensemble)
-  * [Results](#Results)
+
 
 
 
@@ -92,9 +92,15 @@ We used resnet18 architecture with dropout.We used Optuna to tune our hyper para
 
 
 ### Ensemble
-someting....
+We tried to boost our performnaces by using ensemble of classifier. In this method we chop each track to sub-tracks and predict label to each sub-track independently.
+we tried both 'soft' and 'hard' ensembles. 'soft' means summing up the output vectors and then take the argmax as the final prediction, 'hard' means create histogram from all the mini-predictions and take the label that got the majority of the mini-predictions as our final prediction.
+
+that method yielded the following performances:
+|Number of classes      | Accuracy |
+|----------------------|----|
+|`10 classes`|  `----
+|`8 classes`|  `-----`|
 
 
-## Result
-here we right things about 
+
 
