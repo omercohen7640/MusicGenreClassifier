@@ -24,20 +24,33 @@ def get_label(file_name, hparams,extra):
         label = hparams.genres.index(genre)
     return label
 
-def load_dataset(set_name, hparams,extra = False,sub_genres = None):
+def load_dataset(set_name, hparams,extra = False,sub_genres = None, dataset_size = 1):
     x = []
     y = []
 
     dataset_path = os.path.join(hparams.feature_path, set_name)
-    for root,dirs,files in os.walk(dataset_path):
-        for file in files:
-            genre = file.split('.')[0]
-            if sub_genres is not None and genre not in sub_genres:
-                continue
-            data = np.load(os.path.join(root,file))
-            label = get_label(file, hparams,extra)
-            x.append(data)
-            y.append(label)
+    if dataset_size<1:
+        for root,dirs,files in os.walk(dataset_path):
+            num_files = len(files)
+            last_file = int(num_files*dataset_size)
+            for file in files[:last_file]:
+                genre = file.split('.')[0]
+                if sub_genres is not None and genre not in sub_genres:
+                    continue
+                data = np.load(os.path.join(root,file))
+                label = get_label(file, hparams,extra)
+                x.append(data)
+                y.append(label)
+    else:
+        for root,dirs,files in os.walk(dataset_path):
+            for file in files:
+                genre = file.split('.')[0]
+                if sub_genres is not None and genre not in sub_genres:
+                    continue
+                data = np.load(os.path.join(root,file))
+                label = get_label(file, hparams,extra)
+                x.append(data)
+                y.append(label)
 
     x = np.stack(x)
     y = np.stack(y)
@@ -68,10 +81,10 @@ def load_ensemble_test_set(hparams, sub_genres = None):
     y = np.stack(y)
 
     return x,y
-def get_dataloader(hparams, sub_genres = None):
-    x_train, y_train = load_dataset('train_aug', hparams,sub_genres=sub_genres)
-    x_valid, y_valid = load_dataset('valid', hparams,sub_genres=sub_genres)
-    x_test, y_test = load_dataset('test', hparams,sub_genres=sub_genres)
+def get_dataloader(hparams, sub_genres = None,dataset_size=1):
+    x_train, y_train = load_dataset('train_aug', hparams,sub_genres=sub_genres,dataset_size=dataset_size)
+    x_valid, y_valid = load_dataset('valid', hparams,sub_genres=sub_genres,dataset_size=dataset_size)
+    x_test, y_test = load_dataset('test', hparams,sub_genres=sub_genres,dataset_size=dataset_size)
     x_test_ensemble, y_test_ensemble = load_ensemble_test_set(hparams, sub_genres=sub_genres)
     mean = np.mean(x_train)
     std = np.std(x_train)
