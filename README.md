@@ -31,7 +31,7 @@ Our Project for the Technion's EE 046211 course "Deep Learning"
   * [1D-Classifier](#installation-instructions)
     + [Failer](#Failer)
   * [2D-Classifier](#installation-instructions)
-    + [Transformtion](#Transformtion)
+    + [Feature extraction](#Feature extraction)
     + [Sheduler&WarmUp](#Sheduler&WarmUp)
     + [Tuner](#Tuner)
   * [Results](#Results)
@@ -60,16 +60,24 @@ We have used the following augmentations:
 ### -----
 
 ## 1D-Classifier
-here we right things about 
-
-### Failer!
-this was a Failer and the net just played the guessing game XD
+Our first trial  to improve model's performance was to use 1D convnet. 
+--- picture of arch----
+We tested our model on 10-classes dataset and we got poor 10% accuracy performance (random prediction). We tried to use chopped sub-tracks of different lengths and still the performance didn’t improve.
+At this point we concluded:
+1.	Working with the raw data (without any pre-processing) is more difficult and requires more sophisticated architectures. 
+2.	Working with 2D data allows us to use known computer-vision architectures  and techniques.
 
 ## 2D-Classifier
-here we right things about 
+### Feature extraction
+Working with 2D input means transforming the data into time-frequency space of mel-spectrogram. We used Librosa tools to transform the data. Here is an ilustration for the transform:
 
-### Transformtion
-someting....
+
+
+
+
+After trying 2 models of 1D convnet we've decided to use 2D convnet. We used resnet18 architecture with dropout. Here we used Optuna to tune our hyper parameters. That model achieved 62.4% accuracy on the dataset.
+
+
 
 ### Sheduler&WarmUp
 someting....
