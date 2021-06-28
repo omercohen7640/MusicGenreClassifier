@@ -31,6 +31,7 @@ import resnet_dropout
 from datetime import datetime as dt
 import audio_augmentation_joni
 import feature_extraction
+import joblib
 
 
 def get_lr(optimizer):
@@ -57,34 +58,75 @@ def check_output_size():
             break
 
 
-def train():
+def train_1d(train_loader, valid_loader, test_loader, music_classify):
     print("starting training...")
-    hp = hparams.HParams()
-    train_loader, valid_loader,test_loader = DataManager.get_dataloader(hparams=hp)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    music_classify = music_classify.to(device)
+    now = dt.now()
+    lr_iterarion = []
+    vall_acc_epoch = []
+    train_loss_iter = []
+    train_acc_epoch = []
+    dt_string = now.strftime("%d%m%Y%H%M")
+    path = os.path.join(os.getcwd(), "trial_" + dt_string)
+    os.mkdir(path)
     criterion = nn.CrossEntropyLoss()
-    music_classify = model2.Music1DCNN_ver2()
-    lr = hp.learning_rate
-    optimizer = torch.optim.Adam(music_classify.parameters(), lr=lr)
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
-    warmup_scheduler = warmup.UntunedLinearWarmup(optimizer,last_step=5)
-    hp = hparams.HParams()
-    number_of_ephocs = hp.num_epochs
+    lr = hparams.learning_rate
+    warmup_factor = hparams.warmup_factor
+    init_lr = lr / warmup_factor
+
+    optimizer = torch.optim.Adam(music_classify.parameters(), lr=init_lr, weight_decay=hparams.weight_decay)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, threshold=hparams.threshold, mode='max',
+                                               factor=hparams.factor, patience=hparams.patience, verbose=True)
+    # warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
+    print("begin warmup loop...")
+    warmup_epochs = hparams.warmup_epochs
+    num_steps = warmup_epochs * len(train_loader)
+    warmuper = my_warmup.LinearWarmuper(optimizer=optimizer, steps=num_steps, factor=1e2)
+    for w_epoch in range(warmup_epochs + 1):
+        total_tracks = 0
+        total_correct = 0
+        epoch_time = time.time()
+        print("info: lr={}".format(get_lr(optimizer)))
+        for i, data in enumerate(train_loader):
+            running_loss = 0.0
+            waveform, label = data
+            waveform = waveform.to(device)
+            label = label.to(device)
+            outputs = music_classify(waveform)
+            loss = criterion(outputs, label)
+            train_loss_iter.append(loss)
+            running_loss += loss.data.item()
+            _, predicted = torch.max(outputs.data, 1)
+            total_tracks += label.size(0)
+            total_correct += (predicted == label).sum().item()
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            warmuper.step()
+            lr_iterarion.append(get_lr(optimizer))
+        running_loss /= len(train_loader)
+        model_accuracy = total_correct / total_tracks * 100
+        epoch_time = time.time() - epoch_time
+        log = "Epoch: {}  training loss: {:.3f} | train acc: {}| time: {}".format(w_epoch, running_loss, model_accuracy,
+                                                                                  epoch_time)
+        print(log)
+    best_valid_acc = 0
+    number_of_ephocs = hparams.num_epochs
     print("starting train loop...")
-    for epoch in range(1, number_of_ephocs+1):
+    for epoch in range(1, number_of_ephocs + 1):
         music_classify.train()
         running_loss = 0.0
         epoch_time = time.time()
         total_tracks = 0
         total_correct = 0
+        print("info: lr={}".format(get_lr(optimizer)))
 
-        #validloader!!!!!!!!!
-        for i,data in enumerate(valid_loader):
-
-            waveform,label = data
-            waveform.to(device)
-            label.to(device)
-
+        for i, data in enumerate(train_loader):
+            waveform, label = data
+            waveform = waveform.to(device)
+            label = label.to(device)
             outputs = music_classify(waveform)
             loss = criterion(outputs, label)
             _, predicted = torch.max(outputs.data, 1)
@@ -94,20 +136,43 @@ def train():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
+            lr_iterarion.append(get_lr(optimizer))
             running_loss += loss.data.item()
-        running_loss /= len(valid_loader)
+        running_loss /= len(train_loader)
         model_accuracy = total_correct / total_tracks * 100
         epoch_time = time.time() - epoch_time
-        log = "Epoch: {}  training loss: {:.3f} | train acc: {} | time: {}".format(epoch, running_loss,model_accuracy,epoch_time)
+        valid_accuracy, _, valid_loss = calculate_accuracy_1d(music_classify, valid_loader, device, criterion)
+        log = "Epoch: {}  training loss: {:.3f} | train acc: {}| valid acc: {} | time: {}".format(epoch, running_loss,
+                                                                                                  model_accuracy,
+                                                                                                  valid_accuracy,
+                                                                                                  epoch_time)
+        train_acc_epoch.append(model_accuracy)
+        vall_acc_epoch.append(valid_accuracy)
         print(log)
-        scheduler.step()
-        warmup_scheduler.dampen()
-
+        scheduler.step(metrics=valid_accuracy)
+        if valid_accuracy > best_valid_acc:
+            best_valid_acc = valid_accuracy
+            path_save = os.path.join(path, "best_model")
+            torch.save(music_classify.state_dict(), path_save)
+    lr_iterarion = np.array(lr_iterarion)
+    vall_acc_epoch = np.array(vall_acc_epoch)
+    train_loss_iter = np.array(train_loss_iter)
+    train_acc_epoch = np.array(train_acc_epoch)
+    np.save(os.path.join(path, 'lr_iteration'), lr_iterarion)
+    np.save(os.path.join(path, 'vall_acc_epoch'), vall_acc_epoch)
+    np.save(os.path.join(path, 'train_loss_iter'), train_loss_iter)
+    np.save(os.path.join(path, 'train_acc_epoch'), train_acc_epoch)
+    if test_loader is not None:
+        test_accuracy, _, _ = calculate_accuracy_1d(music_classify, test_loader, device, criterion=criterion)
+        path_save = os.path.join(path, "last_model")
+        torch.save(music_classify.state_dict(), path_save)
+        return test_accuracy
 
 def load_data():
     train_loader, valid_loader, test_loader , test_ensemble_loader= datamanager_ver2.get_dataloader(hparams);
     return train_loader, valid_loader, test_loader, test_ensemble_loader
+
+
 def train_cnn_2d(train_loader, valid_loader, test_loader,music_classify = model_cnn2d.CNN_2D_V2(hparams) ):
     print("starting training...")
 
@@ -258,11 +323,6 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader=None,music_clas
             best_valid_acc = valid_accuracy
             path_save = os.path.join(path, "best_model")
             torch.save(music_classify.state_dict(), path_save)
-    if test_loader is not None:
-        test_accuracy,_,_ =  calculate_accuracy(music_classify,test_loader,device,criterion=criterion)
-        path_save = os.path.join(path, "last_model")
-        torch.save(music_classify.state_dict(), path_save)
-        return test_accuracy
     lr_iterarion = np.array(lr_iterarion)
     vall_acc_epoch = np.array(vall_acc_epoch)
     train_loss_iter = np.array(train_loss_iter)
@@ -271,9 +331,14 @@ def train_cnn_2d_pre_net(train_loader, valid_loader, test_loader=None,music_clas
     np.save(os.path.join(path,'vall_acc_epoch'),vall_acc_epoch)
     np.save(os.path.join(path,'train_loss_iter'), train_loss_iter)
     np.save(os.path.join(path,'train_acc_epoch'),train_acc_epoch)
+    if test_loader is not None:
+        test_accuracy,_,_ =  calculate_accuracy(music_classify,test_loader,device,criterion=criterion)
+        path_save = os.path.join(path, "last_model")
+        torch.save(music_classify.state_dict(), path_save)
+        return test_accuracy
 
 
-def calculate_accuracy(model, dataloader, device , criterion):
+def calculate_accuracy_2d(model, dataloader, device , criterion):
     model= model.to(device)
     model.eval()  # put in evaluation mode
     total_correct = 0
@@ -304,20 +369,48 @@ def calculate_accuracy(model, dataloader, device , criterion):
     return model_accuracy, confusion_matrix, runningn_loss
 
 
-def objective(trial):
+def calculate_accuracy_1d(model, dataloader, device , criterion):
+    model= model.to(device)
+    model.eval()  # put in evaluation mode
+    total_correct = 0
+    total_images = 0
+    confusion_matrix = np.zeros([10, 10], int)
+    runningn_loss = 0
+    with torch.no_grad():
+        for data in dataloader:
+            images, labels = data
+            labels = labels.to(device)
+            images = images.to(device)
+            outputs = model(images)
+            _, predicted = torch.max(outputs.data, 1)
+            loss = criterion(outputs, labels)
+            total_images += labels.size(0)
+            total_correct += (predicted == labels).sum().item()
+            runningn_loss += loss
+            for i, l in enumerate(labels):
+                confusion_matrix[l.item(), predicted[i].item()] += 1
+    runningn_loss /= len(dataloader)
+    model_accuracy = total_correct / total_images * 100
+    return model_accuracy, confusion_matrix, runningn_loss
 
-    test_acc = train_for_optuna(trial=trial)
+
+def objective(trial):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    music_classify=resnet_dropout.resnet18(num_classes = 10)
+    music_classify= music_classify.to(device)
+    print("loading data...")
+    train_loader,valid_loader,_,_ = datamanager_ver2.get_dataloader(hparams,dataset_size=hparams.optuna_ds)
+    test_acc = train_for_optuna(trial=trial,music_classify=music_classify,train_loader=train_loader,valid_loader=valid_loader)
     return test_acc
 
 
-def train_for_optuna(trial):
+def train_for_optuna(trial,music_classify, train_loader, valid_loader, test_loader=None):
     now = dt.now()
     dt_string = now.strftime("%d%m%Y%H%M")
     path = os.path.join(os.getcwd(),"trial_"+dt_string)
     os.mkdir(path)
-    music_classify=resnet_dropout.resnet18()
-    print("loading data...")
-    train_loader, valid_loader, test_loader = load_data()
+
+
     print("starting training...")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     criterion = nn.CrossEntropyLoss()
@@ -327,7 +420,7 @@ def train_for_optuna(trial):
     optimizer_name = trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"])
     optimizer = getattr(torch.optim, optimizer_name)(music_classify.parameters(), lr=init_lr, weight_decay=hparams.weight_decay)
     sched_factor = trial.suggest_float("sched_factor",0,1)
-    patience = trial.suggest_int("patience",3,9)
+    patience = trial.suggest_int("patience",1,6)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=sched_factor, patience=patience,
                                                verbose=True)
     #warmup section:
@@ -344,8 +437,8 @@ def train_for_optuna(trial):
         for i, data in enumerate(train_loader):
             running_loss = 0.0
             waveform, label = data
-            waveform.to(device)
-            label.to(device)
+            waveform = waveform.to(device)
+            label = label.to(device)
             size = waveform.size()
             inputs = torch.zeros(size[0], 3, size[1], size[2])
             inputs[:, 0, :, :] = waveform
@@ -371,7 +464,7 @@ def train_for_optuna(trial):
         print(log)
     best_valid_acc = 0
     # warmup_scheduler = warmup.UntunedLinearWarmup(optimizer, last_step=5)
-    ephocs = trial.suggest_int("ephocs",20,45)
+    ephocs = trial.suggest_int("ephocs",10,30)
     print("starting train loop...")
     for epoch in range(1, ephocs + 1):
         print("info: lr={}".format(get_lr(optimizer)))
@@ -418,10 +511,9 @@ def train_for_optuna(trial):
         print(log)
         scheduler.step(metrics=valid_accuracy)
         # warmup_scheduler.dampen()
-    test_accuracy, _, _ = calculate_accuracy(music_classify, test_loader, device, criterion=criterion)
     path_save = os.path.join(path, "last_model")
     torch.save(music_classify.state_dict(), path_save)
-    return test_accuracy
+    return valid_accuracy
 
 def run_parameter_tuning():
     logger = logging.getLogger()
@@ -441,6 +533,9 @@ def run_parameter_tuning():
     print("  Params: ")
     for key, value in trial.params.items():
         print("    {}: {}".format(key, value))
+
+    optuna.visualization.plot_param_importances(study)
+    joblib.dump(study, "study.pkl")
 
 def test_ensemble(model,model_expert, test_ensemble_loader,ensamble_method='soft',model_size = None):
     if ensamble_method not in ['soft','hard']:
@@ -504,18 +599,19 @@ def test_ensemble(model,model_expert, test_ensemble_loader,ensamble_method='soft
 
 
 if __name__ == '__main__':
+    #run_parameter_tuning()
     #audio_augmentation_joni.main_reduced(option="High")
     #feature_extraction.main()
     criterion = nn.CrossEntropyLoss()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    train_loader, valid_loader, test_loader,test_ensemble_loader =datamanager_ver2.get_dataloader(hparams)
-    model10 = resnet_dropout.resnet18(num_classes = 10)
-    #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model10)
-    model10.load_state_dict(torch.load('/home/raveh.be@staff.technion.ac.il/trial_270620211046/best_model'))
-    test_acc,test_mat,_ = calculate_accuracy(model10,test_loader,device=device,criterion=criterion)
-    valid_ac, valid_mat,_ = calculate_accuracy(model10,valid_loader,device,criterion)
-    model_acc_en,mat_en,_ = test_ensemble(model10,model2, test_ensemble_loader,'hard',model_size= 10)
-    print(model_acc_en)
+    #train_loader, valid_loader, test_loader,test_ensemble_loader =datamanager_ver2.get_dataloader(hparams,sub_genres=['classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae',])
+    #model8 = resnet_dropout.resnet18(num_classes = 8)
+    #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model8)
+    #model10.load_state_dict(torch.load('/home/raveh.be@staff.technion.ac.il/trial_270620211046/best_model'))
+    #test_acc,test_mat,_ = calculate_accuracy(model10,test_loader,device=device,criterion=criterion)
+    #valid_ac, valid_mat,_ = calculate_accuracy(model10,valid_loader,device,criterion)
+    #model_acc_en,mat_en,_ = test_ensemble(model10,None, test_ensemble_loader,'hard',model_size= 10)
+    #print(model_acc_en)
     #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model8)
     #model10 = resnet_dropout.resnet18(num_classes=10)
     #train_cnn_2d_pre_net(train_loader,valid_loader,test_loader,model10)
@@ -529,5 +625,6 @@ if __name__ == '__main__':
     #model_acc_en,mat_en,_ = test_ensemble(model10,model2, test_ensemble_loader,'hard')
     #model_acc, mat_acc, _ = calculate_accuracy(model10, test_loader, device, criterion)
     #print(model_acc)
-    #audio_augmentation_joni.main_reduced(option="High",genres = ['rock','blues'],extra = True)
-    #feature_extraction.main()
+    model1dver1 = model2.Music1DCNN_ver2()
+    train_loader, valid_loader, test_loader = DataManager.get_dataloader(hparams)
+    train_1d(train_loader,valid_loader,test_loader,model1dver1)
