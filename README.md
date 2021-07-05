@@ -25,9 +25,9 @@ Our Project for the Technion's EE 046211 course "Deep Learning"
   * [Agenda](#agenda)
   * [MusicGenreClassifier](#MusicGenreClassifier)
   * [Dataset](#Dataset)
-  * [Data augmentation]
-  * [1D-Classifier]
-  * [2D-Classifier]
+  * [Data augmentation](#Data-augmentation)
+  * [1D-Classifier](#1D-Classifier)
+  * [2D-Classifier](#2D-Classifier)
     + [Feature extraction](#Feature-extraction)
     + [Ensaemble](#Ensemble)
 
