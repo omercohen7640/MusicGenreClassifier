@@ -25,9 +25,9 @@ Our Project for the Technion's EE 046211 course "Deep Learning"
   * [Agenda](#agenda)
   * [MusicGenreClassifier](#MusicGenreClassifier)
   * [Dataset](#Dataset)
-  * [Data augmentation](#installation-instructions)
-  * [1D-Classifier](#installation-instructions)
-  * [2D-Classifier](#installation-instructions)
+  * [Data augmentation]
+  * [1D-Classifier]
+  * [2D-Classifier]
     + [Feature extraction](#Feature-extraction)
     + [Ensaemble](#Ensemble)
 
@@ -53,6 +53,12 @@ We have used the following augmentations:
 
 <img src="/img/data_aug.png">
 
+usage:
+```python
+import audio_augmentation
+audio_augmentation.main_reduced()
+```
+
 
 ## 1D-Classifier
 Our first trial  to improve model's performance was to work with the raw data and to use 1D convnet. We tried 2 architetures that yileded same performances:
@@ -73,6 +79,11 @@ At this point we concluded:
 ## 2D-Classifier
 ### Feature extraction
 Working with 2D input means transforming the data into time-frequency space of mel-spectrogram. We used Librosa tools to transform the data. Here is an ilustration for the transform:
+usage:
+```python
+import feature_extraction
+feature_extraction.main()
+```
 
 <img src="/img/original_track.png">
 
@@ -95,9 +106,10 @@ we tried both 'soft' and 'hard' ensembles. 'soft' means summing up the output ve
 
 that method using soft ensemble yielded the following performances:
 
-<img src="/img/ensemble_10.png">
+8 classes:
 
 <img src="/img/ensemble_8.png">
 
+10 classes:
 
-
+<img src="/img/ensemble_10.png">
